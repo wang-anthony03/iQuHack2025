@@ -24,8 +24,10 @@ def add_one(x: QNum):
 
 @qfunc
 def controlled_add(x: QArray, index: CInt):
-   control(ctrl=(x[index] == 1), stmt_block=(lambda: add_one(x[0:index])))
-   
+  add_helper = lambda a: add_one(a)
+  control(ctrl=(x[index]), stmt_block=(lambda: add_helper(x[0:index])))
+
+
 
 @qfunc
 def main(x: Output[QNum]):
@@ -46,12 +48,12 @@ def main(x: Output[QNum]):
   for k in range(2, m+1):
     big_sum += 4**(m-k)
   iters = []
-  iters.append((sigma - (4**(num_qubits-1)-1)/12 - (num_iters/4)*(big_sum)) / 4**(num_qubits-1))
+  iters.append(round((sigma - (4**(num_qubits-1)-1)/12 - (num_iters/4)*(big_sum)) / 4**(num_qubits-1)))
   for i in range(1, m+1):
     iters.append(num_iters)
-
-  for i in range(1, m): # loop IV: there are i qubits in the Gaussian state.
-    for j in range(1, iters[i]+1):
+  
+  for i in range(1, m-1): # loop IV: there are i qubits in the Gaussian state.
+    for j in range(0, iters[i]+1):
       # add a state in |+> to the register
       hadamard_something(x, i) # TODO: apply hadamard to all of x at the beginning of the circuit instead.
       # add the register and 1 controlled on the |+> qubit
